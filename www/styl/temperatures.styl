@@ -126,7 +126,7 @@
       padding 0px
     li
       float left
-      width (976px / 240)
+      width (976px / 108)
       height 30px
       position relative
       &:after
@@ -149,6 +149,9 @@
       &.big
         span
           display block
+      &:last-child
+          span
+            transform translate(-100%, 0)
     &:hover
       li:after
         height 3px

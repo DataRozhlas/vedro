@@ -107,10 +107,10 @@ ig.drawTemperatures = ->
         ..html "Vyberte rok, jehož teploty chcete zobrazit"
       ..append \ol
         ..selectAll \li .data years .enter!append \li
-          ..classed \left (d, i) -> i > 234
+          ..classed \left (d, i) -> i > 100
           ..append \span
             ..html (d, i) -> d.year
-          ..filter ((d, i) -> 5 == i % 20)
+          ..filter ((d, i) -> 8 == i % 20)
             ..classed \big yes
           ..on \mouseover (d, i) -> drawYear i
           ..on \touchstart (d, i) -> drawYear i
@@ -125,6 +125,7 @@ ig.drawTemperatures = ->
 
     undrawYear = ->
       path.attr \d ""
+    console.log 2015 - 1907
     drawYear 2015 - 1907
     # drawYear 1947 - 1907
 
