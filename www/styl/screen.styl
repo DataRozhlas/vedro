@@ -1,0 +1,29 @@
+@import colors
+@import prefixes
+@import 'components/triangle'
+
+.ig
+  @import basics
+
+.ig
+  &.temp
+    @import temperatures
+  .year-part
+    position absolute
+    font-variant small-caps
+    z-index 5
+    pointer-events none
+    &:before
+      content " "
+      position absolute
+      border 1px dotted #a
+      border-top 0px none
+      height 2px
+      top -6px
+    &.pankrac
+      top 249px
+      left 370px
+      &:before
+        width 12px
+  .monthContainer:hover ~ .year-part
+    opacity 0.1
