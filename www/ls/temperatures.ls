@@ -1,6 +1,5 @@
 ig.drawTemperatures = ->
-  years = [0 to 239].map (d, i) ->
-    year = i + 1775
+  years = [1907 to 2015].map (year) ->
     data = []
     {year, data}
   temps = for line, day in ig.data.temps.split "\n"
@@ -13,20 +12,22 @@ ig.drawTemperatures = ->
           years[yearIndex].data[day] = temp
         {temp, day, year}
   len = temps.length
+  binValues = []
   cols = for i, index in [0 til len by 3]
     threeDayTemps = temps[i] ++ temps[i + 1] ++ temps[i + 2]
     threeDayTemps .= filter -> !isNaN it.temp
     threeDayTemps.sort (a, b) -> a.temp - b.temp
-    binnedDays = [0 to 57].map -> 0
+    binnedDays = [0 to 58].map -> 0
     for {temp}, ii in threeDayTemps
-      bin = Math.round temp + 25
+      bin = Math.round temp + 20
+      binValues.push bin
       binnedDays[bin] += 1
     {temps:threeDayTemps, index, binnedDays}
 
   color = d3.scale.quantize!
     ..range ['#f6f6f6','#fde5d0','#ffd5ac','#ffc489','#ffb361', '#fd8d3c']
 
-  y = 57
+  y = 58
   x = 122
 
 
@@ -34,12 +35,12 @@ ig.drawTemperatures = ->
 
   width = x * pointRadius
   height = y * pointRadius
-  yScale = -> height - (it + 25) * pointRadius
+  yScale = -> height - (it + 20) * pointRadius
   container = d3.select ig.containers.base
     ..classed \temp yes
   yAxis = container.append \div
     ..attr \class "axis y"
-    ..selectAll \div.item .data [20 0 -20] .enter!append \div
+    ..selectAll \div.item .data [37 20 0 -20] .enter!append \div
       ..attr \class \item
       ..style \top -> "#{yScale it + 1}px"
       ..html -> it
@@ -97,8 +98,8 @@ ig.drawTemperatures = ->
     svg = container.append \svg
       ..attr {width: width, height}
     line = d3.svg.line!
-      ..x (d, i) -> (i + 0.5) * (pointRadius / 3)
-      ..y (d) -> yScale d
+      ..x (d) -> (d.index + 0.5) * (pointRadius / 3)
+      ..y (d) -> yScale d.value
     path = svg.append \path
     yearAxis = container.append \div
       ..attr \class \year-axis
@@ -116,10 +117,16 @@ ig.drawTemperatures = ->
           ..on \mouseout -> undrawYear!
 
     drawYear = (yearIndex) ->
-      path.attr \d line years[yearIndex].data
+      data = years[yearIndex].data
+        .map (value, index) -> {value, index}
+        .filter -> it.value isnt void
+
+      path.attr \d line data
 
     undrawYear = ->
       path.attr \d ""
+    drawYear 2015 - 1907
+    # drawYear 1947 - 1907
 
   drawOneYear!
   container.append \ul
