@@ -117,12 +117,31 @@ ig.drawTemperatures = ->
             ..on \touchstart (d, i) -> drawYear i
             ..on \mouseout -> drawYear 2015 - 1907
 
+    lastYear = years[*-1]
+    lastX = (lastYear.data.length + 0.5) * (pointRadius / 3)
+    lastY = yScale lastYear.data[*-1]
+
+    yearLegend = svg.append \g
+      ..attr \class \year-legend
+      ..attr \transform "translate(#lastX, #lastY)"
+      ..append \circle
+        ..attr \r 3
+        ..attr \cx -2
+        ..attr \cy -2
+
+      ..append \text
+        ..html "9. srpna 2015"
+        ..attr \y 4
+        ..attr \x 10
+
     drawYear = (yearIndex) ->
       data = years[yearIndex].data
         .map (value, index) -> {value, index}
         .filter -> it.value isnt void
+      yearLegend.classed \active yearIndex == 2015 - 1907
 
       path.attr \d line data
+
 
     undrawYear = ->
       path.attr \d ""
