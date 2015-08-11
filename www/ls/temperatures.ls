@@ -130,8 +130,8 @@ ig.drawTemperatures = ->
 
   drawOneYear!
     ..drawYear 2015 - 1907
-  drawOneYear yes
-    ..drawYear 1947 - 1907
+  # drawOneYear yes
+  #   ..drawYear 1947 - 1907
   container.append \ul
     ..attr \class \legend
     ..append \li .html "Nejčastější (průměrné) teploty"
