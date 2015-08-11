@@ -1,3 +1,4 @@
+isComparingGraph = window.location.hash == '#47'
 ig.drawTemperatures = ->
   years = [1907 to 2015].map (year) ->
     data = []
@@ -16,7 +17,10 @@ ig.drawTemperatures = ->
   cols = for i, index in [0 til len by 3]
     threeDayTemps = temps[i] ++ temps[i + 1] ++ temps[i + 2]
     threeDayTemps .= filter -> !isNaN it.temp
-    threeDayTemps.sort (a, b) -> a.temp - b.temp
+    if isComparingGraph
+      threeDayTemps.sort (a, b) -> a.year - b.year
+    else
+      threeDayTemps.sort (a, b) -> a.temp - b.temp
     binnedDays = [0 to 58].map -> 0
     for {temp}, ii in threeDayTemps
       bin = Math.round temp + 20
@@ -38,30 +42,34 @@ ig.drawTemperatures = ->
   yScale = -> height - (it + 20) * pointRadius
   container = d3.select ig.containers.base
     ..classed \temp yes
+    ..classed \comparing isComparingGraph
+
   yAxis = container.append \div
     ..attr \class "axis y"
     ..selectAll \div.item .data [37 20 0 -20] .enter!append \div
       ..attr \class \item
       ..style \top -> "#{yScale it + 1}px"
       ..html -> it
-  canvas = container.append \canvas
-    ..attr \width "#{width}px"
-    ..attr \height "#{height}px"
-    ..style \margin-left \23px
+  unless isComparingGraph
+    canvas = container.append \canvas
+      ..attr \width "#{width}px"
+      ..attr \height "#{height}px"
+      ..style \margin-left \23px
 
-  ctx = canvas.node!getContext \2d
-  for col, xIndex in cols
-    cx = xIndex * pointRadius + 4
-    color.domain d3.extent col.binnedDays
-    for count, yIndex in col.binnedDays
-      continue unless count
-      cy = height - yIndex * pointRadius - 4
-      ctx.beginPath!
-      ctx.fillStyle = color count
-      ctx.arc cx, cy, pointRadius / 2 - 0.5, 0, 2 * Math.PI
-      ctx.fill!
+    ctx = canvas.node!getContext \2d
+    for col, xIndex in cols
+      cx = xIndex * pointRadius + 4
+      color.domain d3.extent col.binnedDays
+      for count, yIndex in col.binnedDays
+        continue unless count
+        cy = height - yIndex * pointRadius - 4
+        ctx.beginPath!
+        ctx.fillStyle = color count
+        ctx.arc cx, cy, pointRadius / 2 - 0.5, 0, 2 * Math.PI
+        ctx.fill!
 
   drawOverlay container, width, height, cols, yScale
+
   months =
     * length: 31
       name: "leden"
@@ -101,7 +109,7 @@ ig.drawTemperatures = ->
       ..x (d) -> (d.index + 0.5) * (pointRadius / 3)
       ..y (d) -> yScale d.value
     path = svg.append \path
-    unless isSecondary
+    unless isComparingGraph
       yearAxis = container.append \div
         ..attr \class \year-axis
         ..append \h2
@@ -120,7 +128,6 @@ ig.drawTemperatures = ->
     lastYear = years[*-1]
     lastX = (lastYear.data.length + 0.5) * (pointRadius / 3)
     lastY = yScale lastYear.data[*-1]
-
     yearLegend = svg.append \g
       ..attr \class \year-legend
       ..attr \transform "translate(#lastX, #lastY)"
@@ -128,8 +135,8 @@ ig.drawTemperatures = ->
         ..attr \r 3
         ..attr \cx -2
         ..attr \cy -2
-
-      ..append \text
+    unless isComparingGraph
+      yearLegend.append \text
         ..html "9. srpna 2015"
         ..attr \y 4
         ..attr \x 10
@@ -138,7 +145,8 @@ ig.drawTemperatures = ->
       data = years[yearIndex].data
         .map (value, index) -> {value, index}
         .filter -> it.value isnt void
-      yearLegend.classed \active yearIndex == 2015 - 1907
+      if yearLegend
+        yearLegend.classed \active yearIndex == 2015 - 1907
 
       path.attr \d line data
 
@@ -149,15 +157,20 @@ ig.drawTemperatures = ->
 
   drawOneYear!
     ..drawYear 2015 - 1907
-  # drawOneYear yes
-  #   ..drawYear 1947 - 1907
-  container.append \ul
-    ..attr \class \legend
-    ..append \li .html "Obvyklá nejvyšší teplota"
-    ..append \li .html "Teplotní extrémy"
-
-
-
+  if isComparingGraph
+    drawOneYear yes
+      ..drawYear 1947 - 1907
+  unless isComparingGraph
+    container.append \ul
+      ..attr \class \legend
+      ..append \li .html "Obvyklá nejvyšší teplota"
+      ..append \li .html "Teplotní extrémy"
+  else
+    container.append \ul
+      ..attr \class \legend
+      ..append \li .html "Rok 1947"
+      ..append \li .html "Rok 2015"
+index47 = 1947 - 1907
 drawOverlay = (container, width, height, cols, yScale) ->
   date = new Date!
     ..setHours 12
@@ -174,7 +187,43 @@ drawOverlay = (container, width, height, cols, yScale) ->
     ..attr \class \monthContainer
     ..style \width "#{width}px"
     ..style \height "#{height}px"
-    ..selectAll \div .data cols .enter!append \div
+  if isComparingGraph
+    monthContainer.selectAll \div .data cols .enter!append \div
+      ..attr \class (d, i) -> "col #{if i > 60 then 'right' else ''}"
+      ..append \div
+        ..attr \class "temp min"
+        ..html ->
+          for day in it.temps
+            break if day.year == 1947
+          "Nejvyšší teplota #{toHumanDate day.day, day.year}: #{day.temp} °C"
+        ..style \top ->
+          for day in it.temps
+            break if day.year == 1947
+          y = yScale Math.round day.temp
+
+          currentDay = it.temps[*-1]
+          if currentDay.year == 2015
+            currentY = yScale Math.round currentDay.temp
+            diff = Math.abs currentY - y
+            if diff < 25
+              if currentY < y
+                y += 25 - diff
+              else
+                y -= 25 - diff
+          "#{y}px"
+      ..append \div
+        ..attr \class "temp max"
+        ..html ->
+          day = it.temps[*-1]
+          return void if day.year != 2015
+          "Letošní nejvyšší teplota #{day.temp}  °C"
+        ..style \top ->
+          day = it.temps[*-1]
+          return 999 if day.year != 2015
+          "#{yScale Math.round day.temp}px"
+
+  else
+    monthContainer.selectAll \div .data cols .enter!append \div
       ..attr \class (d, i) -> "col #{if i > 60 then 'right' else ''}"
       ..append \div
         ..attr \class "temp min"
