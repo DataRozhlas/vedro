@@ -7,7 +7,7 @@ ig.drawTemperatures = ->
       .split "\t"
       .map (temp, yearIndex) ->
         temp = parseFloat temp
-        year = 1775 + yearIndex
+        year = 1907 + yearIndex
         if !isNaN temp
           years[yearIndex].data[day] = temp
         {temp, day, year}
@@ -153,8 +153,8 @@ ig.drawTemperatures = ->
   #   ..drawYear 1947 - 1907
   container.append \ul
     ..attr \class \legend
-    ..append \li .html "Nejčastější (průměrné) teploty"
-    ..append \li .html "Teplotní minima a maxima"
+    ..append \li .html "Obvyklá nejvyšší teplota"
+    ..append \li .html "Teplotní extrémy"
 
 
 
@@ -180,17 +180,17 @@ drawOverlay = (container, width, height, cols, yScale) ->
         ..attr \class "temp min"
         ..html ->
           day = it.temps.0
-          "Nejchladnější den #{toHumanDate day.day, day.year}<br>Průměrně #{day.temp} °C"
+          "Nejchladnější den #{toHumanDate day.day, day.year}<br>Nejvyšší teplota #{day.temp} °C"
         ..style \top -> "#{yScale Math.round it.temps.0.temp}px"
       ..append \div
         ..attr \class "temp max"
         ..html ->
           day = it.temps[*-1]
-          "Nejteplejší den #{toHumanDate day.day, day.year}<br>Průměrně #{day.temp}  °C"
+          "Nejteplejší den #{toHumanDate day.day, day.year}<br>Nejvyšší teplota #{day.temp}  °C"
         ..style \top -> "#{yScale Math.round it.temps[*-1].temp}px"
       ..append \div
         ..attr \class "temp avg"
         ..html ->
           day = it.temps[Math.round it.temps.length / 2]
-          "Průměrná teplota #{day.temp} °C"
+          "Obvyklé teplotní maximum: #{day.temp} °C"
         ..style \top -> "#{yScale Math.round it.temps[Math.round it.temps.length / 2].temp}px"
