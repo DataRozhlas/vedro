@@ -101,9 +101,9 @@ ig.drawTemperatures = ->
       ..attr \class \item
       ..style \width -> "#{it.length / 3 * pointRadius}px"
       ..html -> it.name
-
+  svg = null
   drawOneYear = (isSecondary) ->
-    svg = container.append \svg
+    svg := container.append \svg
       ..attr {width: width, height}
     line = d3.svg.line!
       ..x (d) -> (d.index + 0.5) * (pointRadius / 3)
@@ -155,11 +155,52 @@ ig.drawTemperatures = ->
       path.attr \d ""
     {drawYear}
 
+  drawComparison = (yearIndex1, yearIndex2) ->
+    lastValue = null
+    len = years[yearIndex1].data.length
+
+    year1 = for i in [0 til len]
+      value = years[yearIndex1].data[i]
+      if value
+        lastValue := value
+        value
+      else
+        lastValue
+    year2 = for i in [0 til len]
+      value = years[yearIndex2].data[i]
+      if value
+        lastValue := value
+        value
+      else
+        lastValue
+
+
+    area1 = d3.svg.area!
+      ..x (d, i) -> (i + 0.5) * (pointRadius / 3)
+      ..y1 (d, i) ->
+        if year1[i] <= year2[i]
+          yScale year2[i]
+        else
+          yScale year1[i]
+      ..y0 (d, i) ->
+        yScale year2[i]
+    svg.append \path
+      ..attr \class "area area1"
+      ..attr \d area1 year1
+    [year1, year2] = [year2, year1]
+    svg.append \path
+      ..attr \class "area area2"
+      ..attr \d area1 year1
+
   drawOneYear!
     ..drawYear 2015 - 1907
   if isComparingGraph
     drawOneYear yes
       ..drawYear 1947 - 1907
+    drawComparison do
+      2015 - 1907
+      1947 - 1907
+
   unless isComparingGraph
     container.append \ul
       ..attr \class \legend
@@ -170,6 +211,7 @@ ig.drawTemperatures = ->
       ..attr \class \legend
       ..append \li .html "Rok 1947"
       ..append \li .html "Rok 2015"
+
 index47 = 1947 - 1907
 drawOverlay = (container, width, height, cols, yScale) ->
   date = new Date!
@@ -243,3 +285,4 @@ drawOverlay = (container, width, height, cols, yScale) ->
           day = it.temps[Math.round it.temps.length / 2]
           "Obvyklé teplotní maximum: #{day.temp} °C"
         ..style \top -> "#{yScale Math.round it.temps[Math.round it.temps.length / 2].temp}px"
+
