@@ -94,27 +94,28 @@ ig.drawTemperatures = ->
       ..style \width -> "#{it.length / 3 * pointRadius}px"
       ..html -> it.name
 
-  drawOneYear = ->
+  drawOneYear = (isSecondary) ->
     svg = container.append \svg
       ..attr {width: width, height}
     line = d3.svg.line!
       ..x (d) -> (d.index + 0.5) * (pointRadius / 3)
       ..y (d) -> yScale d.value
     path = svg.append \path
-    yearAxis = container.append \div
-      ..attr \class \year-axis
-      ..append \h2
-        ..html "Vyberte rok, jehož teploty chcete zobrazit"
-      ..append \ol
-        ..selectAll \li .data years .enter!append \li
-          ..classed \left (d, i) -> i > 100
-          ..append \span
-            ..html (d, i) -> d.year
-          ..filter ((d, i) -> 8 == i % 20)
-            ..classed \big yes
-          ..on \mouseover (d, i) -> drawYear i
-          ..on \touchstart (d, i) -> drawYear i
-          ..on \mouseout -> undrawYear!
+    unless isSecondary
+      yearAxis = container.append \div
+        ..attr \class \year-axis
+        ..append \h2
+          ..html "Vyberte rok, jehož teploty chcete zobrazit"
+        ..append \ol
+          ..selectAll \li .data years .enter!append \li
+            ..classed \left (d, i) -> i > 100
+            ..append \span
+              ..html (d, i) -> d.year
+            ..filter ((d, i) -> 8 == i % 20)
+              ..classed \big yes
+            ..on \mouseover (d, i) -> drawYear i
+            ..on \touchstart (d, i) -> drawYear i
+            ..on \mouseout -> drawYear 2015 - 1907
 
     drawYear = (yearIndex) ->
       data = years[yearIndex].data
@@ -125,11 +126,12 @@ ig.drawTemperatures = ->
 
     undrawYear = ->
       path.attr \d ""
-    console.log 2015 - 1907
-    drawYear 2015 - 1907
-    # drawYear 1947 - 1907
+    {drawYear}
 
   drawOneYear!
+    ..drawYear 2015 - 1907
+  drawOneYear yes
+    ..drawYear 1947 - 1907
   container.append \ul
     ..attr \class \legend
     ..append \li .html "Nejčastější (průměrné) teploty"
