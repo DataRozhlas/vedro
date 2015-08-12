@@ -40,6 +40,7 @@ ig.drawTemperatures = ->
   width = x * pointRadius
   height = y * pointRadius
   yScale = -> height - (it + 20) * pointRadius
+  xScale = (index) -> (index + 0.5) * (pointRadius / 3)
   container = d3.select ig.containers.base
     ..classed \temp yes
     ..classed \comparing isComparingGraph
@@ -106,7 +107,7 @@ ig.drawTemperatures = ->
     svg := container.append \svg
       ..attr {width: width, height}
     line = d3.svg.line!
-      ..x (d) -> (d.index + 0.5) * (pointRadius / 3)
+      ..x (d) -> xScale d.index
       ..y (d) -> yScale d.value
     path = svg.append \path
     unless isComparingGraph
@@ -126,7 +127,7 @@ ig.drawTemperatures = ->
             ..on \mouseout -> drawYear 2015 - 1907
 
     lastYear = years[*-1]
-    lastX = (lastYear.data.length + 0.5) * (pointRadius / 3)
+    lastX = xScale lastYear.data.length
     lastY = yScale lastYear.data[*-1]
     yearLegend = svg.append \g
       ..attr \class \year-legend
@@ -176,7 +177,7 @@ ig.drawTemperatures = ->
 
 
     area1 = d3.svg.area!
-      ..x (d, i) -> (i + 0.5) * (pointRadius / 3)
+      ..x (d, i) -> xScale i
       ..y1 (d, i) ->
         if year1[i] <= year2[i]
           yScale year2[i]
