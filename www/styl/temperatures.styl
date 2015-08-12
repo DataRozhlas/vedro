@@ -10,6 +10,7 @@
       text-align center
       padding 0px 3px
       font-variant small-caps
+      position relative
       &:after
         display block
         content " "
@@ -205,6 +206,9 @@
 &.comparing
   .monthContainer:hover ~ svg
     opacity 1
+  .monthContainer
+    .col
+      width (976 / 81px)
   .legend
     li:before
       opacity 1
@@ -221,3 +225,15 @@
       fill rgba(ColorHeadingLink, 0.2)
     &.area2
       fill rgba(ColorHeading, 0.2)
+  .axis.x
+    top 490px
+    .item
+      &:before
+        display block
+        content " "
+        width 100%
+        height 2px
+        border 1px dotted #a
+        border-top 0px none
+      &:after
+        display none

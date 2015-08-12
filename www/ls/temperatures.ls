@@ -40,7 +40,12 @@ ig.drawTemperatures = ->
   width = x * pointRadius
   height = y * pointRadius
   yScale = -> height - (it + 20) * pointRadius
-  xScale = (index) -> (index + 0.5) * (pointRadius / 3)
+  dayDivider = if isComparingGraph
+    2
+  else
+    3
+
+  xScale = (index) -> (index + 0.5) * (pointRadius / dayDivider)
   container = d3.select ig.containers.base
     ..classed \temp yes
     ..classed \comparing isComparingGraph
@@ -96,11 +101,13 @@ ig.drawTemperatures = ->
       name: "listopad"
     * length: 31
       name: "prosinec"
+  if isComparingGraph
+    months.length = 8
   xAxis = container.append \div
     ..attr \class "axis x"
     ..selectAll \div.item .data months .enter!append \div
       ..attr \class \item
-      ..style \width -> "#{it.length / 3 * pointRadius}px"
+      ..style \width -> "#{it.length / dayDivider * pointRadius}px"
       ..html -> it.name
   svg = null
   drawOneYear = (isSecondary) ->
@@ -215,6 +222,7 @@ ig.drawTemperatures = ->
 
 index47 = 1947 - 1907
 drawOverlay = (container, width, height, cols, yScale) ->
+
   date = new Date!
     ..setHours 12
 
@@ -231,8 +239,10 @@ drawOverlay = (container, width, height, cols, yScale) ->
     ..style \width "#{width}px"
     ..style \height "#{height}px"
   if isComparingGraph
+    cols.length = 81
     monthContainer.selectAll \div .data cols .enter!append \div
       ..attr \class (d, i) -> "col #{if i > 60 then 'right' else ''}"
+      ..attr \data-prdel (d, i) -> i
       ..append \div
         ..attr \class "temp min"
         ..html ->
