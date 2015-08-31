@@ -52,7 +52,7 @@ ig.drawTemperatures = ->
 
   yAxis = container.append \div
     ..attr \class "axis y"
-    ..selectAll \div.item .data [37 20 0 -20] .enter!append \div
+    ..selectAll \div.item .data [30 20 0 -20] .enter!append \div
       ..attr \class \item
       ..style \top -> "#{yScale it + 1}px"
       ..html -> it
